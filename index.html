@@ -26,19 +26,17 @@
     const ctx = canvas.getContext("2d");
 
     const sprite = new Image();
-    sprite.src = "characters.png"; // keep this file in same folder
+    sprite.src = "characters.png"; // Place this file in same folder
 
-    // sprite sheet details
-    const frameWidth = 48;   // width of one character frame
-    const frameHeight = 48;  // height of one character frame
+    const frameWidth = 48;
+    const frameHeight = 48;
     let currentFrame = 0;
-    const totalFrames = 4;   // number of walking frames per direction
+    const totalFrames = 4;
 
-    let x = 100, y = 100;    // character position
+    let x = 100, y = 100;
     let speed = 4;
     let keys = {};
 
-    // Directions (rows in sprite sheet)
     const directions = {
       down: 0,
       left: 1,
@@ -51,25 +49,38 @@
     window.addEventListener("keyup", (e) => { keys[e.key] = false; });
 
     function update() {
+      let moved = false;
       if (keys["ArrowUp"]) {
         y -= speed;
         currentDirection = directions.up;
+        moved = true;
       }
       if (keys["ArrowDown"]) {
         y += speed;
         currentDirection = directions.down;
+        moved = true;
       }
       if (keys["ArrowLeft"]) {
         x -= speed;
         currentDirection = directions.left;
+        moved = true;
       }
       if (keys["ArrowRight"]) {
         x += speed;
         currentDirection = directions.right;
+        moved = true;
       }
 
-      // cycle animation frames
-      currentFrame = (currentFrame + 1) % totalFrames;
+      // Only animate when moving
+      if (moved) {
+        currentFrame = (currentFrame + 1) % totalFrames;
+      } else {
+        currentFrame = 0;
+      }
+
+      // Keep sprite inside canvas
+      x = Math.max(0, Math.min(canvas.width - frameWidth, x));
+      y = Math.max(0, Math.min(canvas.height - frameHeight, y));
     }
 
     function draw() {
@@ -77,10 +88,10 @@
 
       ctx.drawImage(
         sprite,
-        currentFrame * frameWidth,      // source x
-        currentDirection * frameHeight, // source y
-        frameWidth, frameHeight,        // source size
-        x, y, frameWidth, frameHeight   // destination
+        currentFrame * frameWidth,
+        currentDirection * frameHeight,
+        frameWidth, frameHeight,
+        x, y, frameWidth, frameHeight
       );
     }
 

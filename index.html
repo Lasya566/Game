@@ -2,70 +2,96 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Mini Platformer</title>
+  <title>Sprite Movement</title>
   <style>
     body {
       margin: 0;
-      background: #222;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
+      background: #a3d977;
     }
     canvas {
-      background: #eee;
-      border: 2px solid #000;
+      border: 3px solid #333;
+      background: #fff;
     }
   </style>
 </head>
 <body>
   <canvas id="gameCanvas" width="600" height="400"></canvas>
-  
+
   <script>
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
 
-    const character = new Image();
-    character.src = "characters.png"; // ✅ exact name match
+    const sprite = new Image();
+    sprite.src = "Characters.png"; // keep this file in same folder
 
-    let x = 50;
-    let y = 300;
-    let velocityY = 0;
-    let isJumping = false;
+    // sprite sheet details
+    const frameWidth = 48;   // width of one character frame
+    const frameHeight = 48;  // height of one character frame
+    let currentFrame = 0;
+    const totalFrames = 4;   // number of walking frames per direction
+
+    let x = 100, y = 100;    // character position
+    let speed = 4;
+    let keys = {};
+
+    // Directions (rows in sprite sheet)
+    const directions = {
+      down: 0,
+      left: 1,
+      right: 2,
+      up: 3
+    };
+    let currentDirection = directions.down;
+
+    window.addEventListener("keydown", (e) => { keys[e.key] = true; });
+    window.addEventListener("keyup", (e) => { keys[e.key] = false; });
+
+    function update() {
+      if (keys["ArrowUp"]) {
+        y -= speed;
+        currentDirection = directions.up;
+      }
+      if (keys["ArrowDown"]) {
+        y += speed;
+        currentDirection = directions.down;
+      }
+      if (keys["ArrowLeft"]) {
+        x -= speed;
+        currentDirection = directions.left;
+      }
+      if (keys["ArrowRight"]) {
+        x += speed;
+        currentDirection = directions.right;
+      }
+
+      // cycle animation frames
+      currentFrame = (currentFrame + 1) % totalFrames;
+    }
 
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = "green";
-      ctx.fillRect(0, 350, canvas.width, 50); // ground
-      ctx.drawImage(character, x, y, 50, 50); // player
+
+      ctx.drawImage(
+        sprite,
+        currentFrame * frameWidth,      // source x
+        currentDirection * frameHeight, // source y
+        frameWidth, frameHeight,        // source size
+        x, y, frameWidth, frameHeight   // destination
+      );
     }
 
-    function update() {
-      if (isJumping) {
-        velocityY += 0.5; // gravity
-        y += velocityY;
-        if (y >= 300) {
-          y = 300;
-          isJumping = false;
-        }
-      }
-    }
-
-    function loop() {
+    function gameLoop() {
       update();
       draw();
-      requestAnimationFrame(loop);
+      requestAnimationFrame(gameLoop);
     }
 
-    document.addEventListener("keydown", (e) => {
-      if (e.code === "Space" && !isJumping) {
-        velocityY = -10;
-        isJumping = true;
-      }
-    });
-
-    character.onload = () => {
-      loop();
+    sprite.onload = () => {
+      gameLoop();
     };
   </script>
 </body>
